@@ -6,9 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npx prisma generate && tsc && vite build",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "vite build", 
+    "build:backend": "tsc",
+    "start": "node dist/server.js",
+    "postinstall": "prisma generate"
     "preview": "vite preview",
-    "start": "node dist/api/server.js",
     "railway:build": "npm run db:generate && npm run build",
     "railway:migrate": "npx prisma migrate deploy",
     "railway:start": "npm run railway:migrate && npm run start",
