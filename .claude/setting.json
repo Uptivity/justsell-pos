@@ -1,0 +1,35 @@
+{
+"permissions": {
+"allow": [
+"mix:",
+"mcp__serena__",
+"mcp__context7__",
+"Bash(ls:)",
+"Bash(find:)",
+"Bash(grep:)",
+"Bash(sqlite3:)",
+"Bash(mkdir:)",
+"Bash(cp:)",
+"Bash(mv:)",
+"Bash(git add:)",
+"Bash(git push:)",
+"Bash(git checkout:)",
+"Bash(git stash show:)",
+"Bash(git stash pop:)",
+"Bash(git fetch:)",
+"Bash(git stash push:)",
+"Bash(git merge:)",
+"Bash(git cherry-pick:)",
+"Bash(python:)",
+"Bash(python3 -m pip install:)",
+"Bash(npm install:)",
+"Bash(npx playwright test:*)"
+"Bash(npm run lint)",
+"Bash(npm run test:*)",
+"Read(~/.zshrc)"
+"Bash(docker compose)",
+"Bash(npm run:*)",
+"Read(npx:*)",
+]
+}
+}

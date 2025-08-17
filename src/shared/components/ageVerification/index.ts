@@ -1,0 +1,1 @@
+export { AgeVerificationModal } from './AgeVerificationModal'
