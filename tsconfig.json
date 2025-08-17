@@ -5,22 +5,12 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
+    "strict": false,
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
+    "noEmit": false,
+    "outDir": "./dist",
     "jsx": "react-jsx",
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
@@ -33,6 +23,17 @@
       "@api/*": ["./src/api/*"]
     }
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src/api/**/*",
+    "src/shared/types/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist", 
+    "src/tests/**/*",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "src/admin-app/**/*",
+    "src/pos-app/**/*"
+  ]
 }

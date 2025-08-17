@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-"build": "npm run build:frontend && npm run build:backend:notests",
-"build:backend:notests": "tsc --noEmit false --skipLibCheck",
+    "build": "vite build && tsc",
     "build:frontend": "vite build",
     "build:backend": "tsc",
     "start": "node dist/server.js",
