@@ -14,39 +14,29 @@
     "jsx": "react-jsx",
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "paths": {
-      "@/*": ["./src/*"],
-      "@admin/*": ["./src/admin-app/*"],
-      "@pos/*": ["./src/pos-app/*"],
-      "@shared/*": ["./src/shared/*"],
-      "@api/*": ["./src/api/*"]
-    }
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "src/api/server.ts",
-    "src/api/controllers/auth.ts",
-    "src/api/controllers/products.ts",
-    "src/api/controllers/customers.ts",
-    "src/api/controllers/transactions.ts",
-    "src/api/middleware/**/*",
+    "src/api/middleware/auth.ts",
     "src/api/routes/auth.ts",
     "src/api/routes/products.ts", 
     "src/api/routes/customers.ts",
     "src/api/routes/transactions.ts",
-    "src/shared/types/**/*"
+    "src/api/controllers/auth.ts",
+    "src/api/controllers/products.ts",
+    "src/api/controllers/customers.ts",
+    "src/api/controllers/transactions.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist", 
+    "dist",
     "src/tests/**/*",
     "**/*.test.ts",
     "**/*.spec.ts",
     "src/admin-app/**/*",
     "src/pos-app/**/*",
     "src/api/routes/quickbooks.ts",
-    "src/api/controllers/quickbooks.ts",
-    "src/shared/services/quickbooks.ts",
-    "src/shared/hooks/useQuickBooks.ts"
+    "src/api/controllers/quickbooks.ts"
   ]
 }
