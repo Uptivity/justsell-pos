@@ -1,29 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(claude mcp add:*)",
-      "Bash(npm create:*)",
-      "Bash(npm init:*)",
-      "Bash(npm install:*)",
-      "Bash(mkdir:*)",
-      "Bash(npx prisma:*)",
-      "Bash(npm run dev:*)",
-      "Bash(npm run type-check:*)",
-      "Bash(npm run test:unit:*)",
-      "Bash(touch:*)",
-      "Bash(npm run lint)",
-      "Bash(rm:*)",
-      "Bash(npm run lint:*)",
-      "Bash(docker-compose up:*)",
-      "Bash(docker compose:*)",
-      "Bash(npm run test:*)",
-      "Bash(npm test)",
-      "Bash(git init:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git remote add:*)",
-      "Bash(mv:*)"
+      "Bash(find:*)"
     ],
-    "deny": []
+    "deny": [],
+    "ask": []
   }
 }
