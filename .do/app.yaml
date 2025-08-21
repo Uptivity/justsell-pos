@@ -1,0 +1,81 @@
+name: justsell-pos
+services:
+- name: api
+  source_dir: /
+  github:
+    repo: uptivity/justsell-pos
+    branch: main
+  run_command: npm start
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  build_command: npm run build:backend && npx prisma generate
+  envs:
+  - key: NODE_ENV
+    value: production
+  - key: API_PORT
+    value: "8080"
+  - key: DATABASE_URL
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: JWT_SECRET
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: JWT_REFRESH_SECRET
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: SESSION_SECRET
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: ADMIN_USERNAME
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  - key: ADMIN_PASSWORD_HASH
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
+  health_check:
+    http_path: /health
+  http_port: 8080
+  routes:
+  - path: /api
+  - path: /health
+
+- name: frontend
+  source_dir: /
+  github:
+    repo: uptivity/justsell-pos
+    branch: main
+  run_command: npx serve -s dist -l 3000
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  build_command: npm run build:frontend
+  envs:
+  - key: NODE_ENV
+    value: production
+  - key: VITE_API_URL
+    value: ${api.PUBLIC_URL}/api
+  http_port: 3000
+  routes:
+  - path: /
+
+databases:
+- name: justsell-db
+  engine: PG
+  version: "14"
+  size: db-s-dev-database
+
+jobs:
+- name: migrate
+  source_dir: /
+  github:
+    repo: uptivity/justsell-pos
+    branch: main
+  run_command: npx prisma migrate deploy
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  envs:
+  - key: DATABASE_URL
+    scope: RUN_AND_BUILD_TIME
+    type: SECRET
