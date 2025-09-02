@@ -73,3 +73,14 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+
+# Old/backup files
+old/
+backup/
+*.backup
+*.bak
+
+# Deployment specific
+.do/
+.env.digitalocean
+*.digitalocean
