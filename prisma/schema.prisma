@@ -1,0 +1,565 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  MANAGER
+  CASHIER
+}
+
+enum LoyaltyTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  GIFT_CARD
+  SPLIT
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  VOIDED
+}
+
+enum TransactionType {
+  SALE
+  RETURN
+  VOID
+  EXCHANGE
+}
+
+enum OfferType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BOGO
+  POINTS_MULTIPLIER
+  FREE_SHIPPING
+}
+
+enum TargetAudience {
+  ALL
+  LOYALTY_MEMBERS
+  NEW_CUSTOMERS
+  VIP
+  EXPIRING_PRODUCT_BUYERS
+}
+
+enum RuleType {
+  AGE_VERIFICATION
+  FLAVOR_BAN
+  TAX_RATE
+  PRODUCT_RESTRICTION
+  QUANTITY_LIMIT
+}
+
+enum JurisdictionType {
+  FEDERAL
+  STATE
+  COUNTY
+  CITY
+}
+
+enum EnforcementPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Models
+model User {
+  id                    String        @id @default(uuid())
+  username              String        @unique
+  passwordHash          String        @map("password_hash")
+  firstName             String?       @map("first_name")
+  lastName              String?       @map("last_name")
+  role                  UserRole
+  storeId               String?       @map("store_id")
+  store                 StoreLocation? @relation(fields: [storeId], references: [id])
+  isActive              Boolean       @default(true) @map("is_active")
+  lastLoginAt           DateTime?     @map("last_login_at") @db.Timestamptz
+  passwordChangedAt     DateTime      @default(now()) @map("password_changed_at") @db.Timestamptz
+  failedLoginAttempts   Int           @default(0) @map("failed_login_attempts")
+  lockedUntil           DateTime?     @map("locked_until") @db.Timestamptz
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  transactions          Transaction[]
+  ageVerificationLogs   AgeVerificationLog[] @relation("EmployeeVerifications")
+  managerOverrides      AgeVerificationLog[] @relation("ManagerOverrides")
+
+  @@index([username])
+  @@index([storeId])
+  @@index([role])
+  @@map("users")
+}
+
+model StoreLocation {
+  id                    String        @id @default(uuid())
+  storeName             String        @map("store_name")
+  addressLine1          String?       @map("address_line1")
+  addressLine2          String?       @map("address_line2")
+  city                  String?
+  stateCode             String        @map("state_code") @db.VarChar(2)
+  zipCode               String?       @map("zip_code")
+  countryCode           String        @default("US") @map("country_code") @db.VarChar(2)
+  phone                 String?
+  email                 String?
+  taxId                 String?       @map("tax_id")
+  timezone              String        @default("America/New_York")
+  isActive              Boolean       @default(true) @map("is_active")
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  users                 User[]
+  transactions          Transaction[]
+  customerPurchaseHistory CustomerPurchaseHistory[]
+  ageVerificationLogs   AgeVerificationLog[]
+  quickBooksIntegration QuickBooksIntegration?
+  quickBooksAccountMapping QuickBooksAccountMapping?
+
+  @@index([stateCode])
+  @@index([isActive])
+  @@map("store_locations")
+}
+
+model Product {
+  id                    String        @id @default(uuid())
+  name                  String
+  sku                   String        @unique
+  barcode               String?
+  price                 Decimal       @db.Decimal(10, 2)
+  cost                  Decimal?      @db.Decimal(10, 2)
+  quantity              Int           @default(0)
+  minStockLevel         Int           @default(0) @map("min_stock_level")
+  category              String?
+  vendor                String?
+  description           String?       @db.Text
+  imageUrl              String?       @map("image_url")
+  
+  // Compliance-specific fields
+  flavorProfile         String?       @map("flavor_profile")
+  isSyntheticNicotine   Boolean       @default(false) @map("is_synthetic_nicotine")
+  volumeInMl            Decimal?      @map("volume_in_ml") @db.Decimal(10, 2)
+  isClosedSystem        Boolean?      @map("is_closed_system")
+  numCartridges         Int?          @map("num_cartridges")
+  nicotineStrength      Decimal?      @map("nicotine_strength") @db.Decimal(5, 2)
+  ageRestricted         Boolean       @default(true) @map("age_restricted")
+  
+  // Inventory management
+  expirationDate        DateTime?     @map("expiration_date") @db.Date
+  reasonForExpiration   String?       @map("reason_for_expiration")
+  lotNumber             String?       @map("lot_number")
+  supplierItemId        String?       @map("supplier_item_id")
+  
+  // Integration fields
+  quickBooksId          String?       @map("quickbooks_id")
+  
+  // System fields
+  isActive              Boolean       @default(true) @map("is_active")
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  lineItems             LineItem[]
+  customerPurchaseHistory CustomerPurchaseHistory[]
+
+  @@index([sku])
+  @@index([barcode])
+  @@index([category])
+  @@index([flavorProfile])
+  @@index([expirationDate])
+  @@index([isActive])
+  @@map("products")
+}
+
+model Customer {
+  id                    String        @id @default(uuid())
+  firstName             String        @map("first_name")
+  lastName              String        @map("last_name")
+  email                 String?       @unique
+  phoneNumber           String?       @map("phone_number")
+  dateOfBirth           DateTime?     @map("date_of_birth") @db.Date
+  
+  // Address information
+  addressLine1          String?       @map("address_line1")
+  addressLine2          String?       @map("address_line2")
+  city                  String?
+  state                 String?
+  zipCode               String?       @map("zip_code")
+  
+  // Loyalty program
+  loyaltyPoints         Int           @default(0) @map("loyalty_points")
+  loyaltyTier           LoyaltyTier   @default(BRONZE) @map("loyalty_tier")
+  pointsLifetimeEarned  Int           @default(0) @map("points_lifetime_earned")
+  pointsLifetimeRedeemed Int          @default(0) @map("points_lifetime_redeemed")
+  
+  // Customer analytics
+  totalSpent            Decimal       @default(0.00) @map("total_spent") @db.Decimal(10, 2)
+  transactionCount      Int           @default(0) @map("transaction_count")
+  lastPurchaseDate      DateTime?     @map("last_purchase_date") @db.Timestamptz
+  firstPurchaseDate     DateTime?     @map("first_purchase_date") @db.Timestamptz
+  averageTransactionValue Decimal?    @map("average_transaction_value") @db.Decimal(10, 2)
+  
+  // Privacy and compliance
+  marketingOptIn        Boolean       @default(false) @map("marketing_opt_in")
+  smsOptIn              Boolean       @default(false) @map("sms_opt_in")
+  dataRetentionConsent  Boolean       @default(true) @map("data_retention_consent")
+  
+  // Integration fields
+  quickBooksId          String?       @map("quickbooks_id")
+  
+  // System fields
+  isActive              Boolean       @default(true) @map("is_active")
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  transactions          Transaction[]
+  customerPurchaseHistory CustomerPurchaseHistory[]
+  ageVerificationLogs   AgeVerificationLog[]
+
+  @@index([email])
+  @@index([phoneNumber])
+  @@index([dateOfBirth])
+  @@index([loyaltyPoints(sort: Desc)])
+  @@index([lastPurchaseDate(sort: Desc)])
+  @@map("customers")
+}
+
+model Transaction {
+  id                    String        @id @default(uuid())
+  receiptNumber         String        @unique @map("receipt_number")
+  storeId               String        @map("store_id")
+  store                 StoreLocation @relation(fields: [storeId], references: [id])
+  customerId            String?       @map("customer_id")
+  customer              Customer?     @relation(fields: [customerId], references: [id])
+  employeeId            String        @map("employee_id")
+  employee              User          @relation(fields: [employeeId], references: [id])
+  
+  // Transaction amounts
+  subtotalAmount        Decimal       @map("subtotal_amount") @db.Decimal(10, 2)
+  discountAmount        Decimal       @default(0.00) @map("discount_amount") @db.Decimal(10, 2)
+  taxAmount             Decimal       @map("tax_amount") @db.Decimal(10, 2)
+  totalAmount           Decimal       @map("total_amount") @db.Decimal(10, 2)
+  
+  // Tax breakdown (JSONB for flexibility)
+  taxBreakdown          Json?         @map("tax_breakdown") @db.JsonB
+  
+  // Payment information
+  paymentMethod         PaymentMethod @map("payment_method")
+  paymentStatus         PaymentStatus @default(PENDING) @map("payment_status")
+  paymentProcessor      String?       @map("payment_processor")
+  paymentReference      String?       @map("payment_reference")
+  cashTendered          Decimal?      @map("cash_tendered") @db.Decimal(10, 2)
+  changeGiven           Decimal?      @map("change_given") @db.Decimal(10, 2)
+  
+  // Compliance fields
+  ageVerificationRequired Boolean     @default(false) @map("age_verification_required")
+  ageVerificationCompleted Boolean    @default(false) @map("age_verification_completed")
+  complianceFlags       Json?         @map("compliance_flags") @db.JsonB
+  
+  // Loyalty program
+  loyaltyPointsEarned   Int           @default(0) @map("loyalty_points_earned")
+  loyaltyPointsRedeemed Int           @default(0) @map("loyalty_points_redeemed")
+  offersApplied         Json?         @map("offers_applied") @db.JsonB
+  
+  // Transaction metadata
+  transactionType       TransactionType @default(SALE) @map("transaction_type")
+  originalTransactionId String?       @map("original_transaction_id")
+  originalTransaction   Transaction?  @relation("TransactionReturns", fields: [originalTransactionId], references: [id])
+  returns               Transaction[] @relation("TransactionReturns")
+  notes                 String?       @db.Text
+  
+  // Integration fields
+  quickBooksId          String?       @map("quickbooks_id")
+  
+  // System fields
+  transactionDate       DateTime      @default(now()) @map("transaction_date") @db.Timestamptz
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  lineItems             LineItem[]
+  customerPurchaseHistory CustomerPurchaseHistory[]
+  ageVerificationLogs   AgeVerificationLog[]
+
+  @@index([storeId])
+  @@index([customerId])
+  @@index([employeeId])
+  @@index([transactionDate])
+  @@index([paymentStatus])
+  @@index([receiptNumber])
+  @@index([storeId, transactionDate])
+  @@map("transactions")
+}
+
+model LineItem {
+  id                    String        @id @default(uuid())
+  transactionId         String        @map("transaction_id")
+  transaction           Transaction   @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  productId             String        @map("product_id")
+  product               Product       @relation(fields: [productId], references: [id])
+  
+  // Product information (snapshot at time of sale)
+  productName           String        @map("product_name")
+  productSku            String        @map("product_sku")
+  quantity              Int
+  unitPrice             Decimal       @map("unit_price") @db.Decimal(10, 2)
+  lineDiscount          Decimal       @default(0.00) @map("line_discount") @db.Decimal(10, 2)
+  lineTotal             Decimal       @map("line_total") @db.Decimal(10, 2)
+  
+  // Tax information per line item
+  lineTaxAmount         Decimal       @default(0.00) @map("line_tax_amount") @db.Decimal(10, 2)
+  taxDetails            Json?         @map("tax_details") @db.JsonB
+  
+  // Compliance tracking
+  ageVerificationRequired Boolean     @default(false) @map("age_verification_required")
+  complianceChecked     Boolean       @default(false) @map("compliance_checked")
+  
+  // Inventory tracking
+  lotNumber             String?       @map("lot_number")
+  expirationDate        DateTime?     @map("expiration_date") @db.Date
+  
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([transactionId])
+  @@index([productId])
+  @@index([createdAt])
+  @@map("line_items")
+}
+
+model Offer {
+  id                    String        @id @default(uuid())
+  name                  String
+  description           String?       @db.Text
+  offerType             OfferType     @map("offer_type")
+  
+  // Discount configuration
+  discountValue         Decimal       @map("discount_value") @db.Decimal(10, 2)
+  minPurchaseAmount     Decimal       @default(0.00) @map("min_purchase_amount") @db.Decimal(10, 2)
+  maxDiscountAmount     Decimal?      @map("max_discount_amount") @db.Decimal(10, 2)
+  
+  // Targeting
+  targetAudience        TargetAudience @default(ALL) @map("target_audience")
+  customerSegments      Json?         @map("customer_segments") @db.JsonB
+  applicableProducts    Json?         @map("applicable_products") @db.JsonB
+  excludedProducts      Json?         @map("excluded_products") @db.JsonB
+  
+  // Usage limits
+  maxUsesTotal          Int?          @map("max_uses_total")
+  maxUsesPerCustomer    Int           @default(1) @map("max_uses_per_customer")
+  currentUses           Int           @default(0) @map("current_uses")
+  
+  // Timing
+  startDate             DateTime      @map("start_date") @db.Timestamptz
+  endDate               DateTime      @map("end_date") @db.Timestamptz
+  
+  // AI-generated offer metadata
+  generatedByAi         Boolean       @default(false) @map("generated_by_ai")
+  aiConfidenceScore     Decimal?      @map("ai_confidence_score") @db.Decimal(3, 2)
+  expectedRedemptionRate Decimal?     @map("expected_redemption_rate") @db.Decimal(5, 4)
+  targetCustomerCount   Int?          @map("target_customer_count")
+  
+  // System fields
+  isActive              Boolean       @default(true) @map("is_active")
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([startDate])
+  @@index([endDate])
+  @@index([targetAudience])
+  @@index([isActive])
+  @@map("offers")
+}
+
+model CustomerPurchaseHistory {
+  id                    String        @id @default(uuid())
+  customerId            String        @map("customer_id")
+  customer              Customer      @relation(fields: [customerId], references: [id])
+  productId             String        @map("product_id")
+  product               Product       @relation(fields: [productId], references: [id])
+  transactionId         String        @map("transaction_id")
+  transaction           Transaction   @relation(fields: [transactionId], references: [id])
+  
+  // Purchase details
+  quantity              Int
+  unitPrice             Decimal       @map("unit_price") @db.Decimal(10, 2)
+  totalPrice            Decimal       @map("total_price") @db.Decimal(10, 2)
+  purchaseDate          DateTime      @map("purchase_date") @db.Timestamptz
+  
+  // Product characteristics at time of purchase
+  productCategory       String?       @map("product_category")
+  flavorProfile         String?       @map("flavor_profile")
+  brand                 String?
+  
+  // Purchase context
+  storeId               String        @map("store_id")
+  store                 StoreLocation @relation(fields: [storeId], references: [id])
+  timeOfDay             Int?          @map("time_of_day")
+  dayOfWeek             Int?          @map("day_of_week")
+  season                String?
+  
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([customerId])
+  @@index([productId])
+  @@index([purchaseDate(sort: Desc)])
+  @@index([customerId, productId])
+  @@map("customer_purchase_history")
+}
+
+model ComplianceRule {
+  id                    String        @id @default(uuid())
+  ruleType              RuleType      @map("rule_type")
+  jurisdictionType      JurisdictionType @map("jurisdiction_type")
+  jurisdictionCode      String        @map("jurisdiction_code")
+  
+  // Rule configuration (flexible JSONB)
+  ruleDetails           Json          @map("rule_details") @db.JsonB
+  
+  // Effective period
+  effectiveDate         DateTime      @map("effective_date") @db.Date
+  endDate               DateTime?     @map("end_date") @db.Date
+  
+  // Rule metadata
+  ruleSource            String?       @map("rule_source")
+  referenceUrl          String?       @map("reference_url")
+  enforcementPriority   EnforcementPriority @default(HIGH) @map("enforcement_priority")
+  
+  // System fields
+  isActive              Boolean       @default(true) @map("is_active")
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([ruleType])
+  @@index([jurisdictionType, jurisdictionCode])
+  @@index([effectiveDate])
+  @@index([isActive])
+  @@map("compliance_rules")
+}
+
+model AgeVerificationLog {
+  id                    String        @id @default(uuid())
+  transactionId         String?       @map("transaction_id")
+  transaction           Transaction?  @relation(fields: [transactionId], references: [id])
+  customerId            String?       @map("customer_id")
+  customer              Customer?     @relation(fields: [customerId], references: [id])
+  employeeId            String        @map("employee_id")
+  employee              User          @relation("EmployeeVerifications", fields: [employeeId], references: [id])
+  storeId               String        @map("store_id")
+  store                 StoreLocation @relation(fields: [storeId], references: [id])
+  
+  // Verification details
+  verificationDate      DateTime      @default(now()) @map("verification_date") @db.Timestamptz
+  idType                String?       @map("id_type")
+  idIssuingState        String?       @map("id_issuing_state") @db.VarChar(2)
+  idExpirationDate      DateTime?     @map("id_expiration_date") @db.Date
+  customerDob           DateTime?     @map("customer_dob") @db.Date
+  calculatedAge         Int?          @map("calculated_age")
+  
+  // Verification result
+  isVerified            Boolean       @map("is_verified")
+  verificationMethod    String?       @map("verification_method")
+  reasonForDenial       String?       @map("reason_for_denial")
+  
+  // Scanner data (if applicable)
+  scannerModel          String?       @map("scanner_model")
+  scannerSoftwareVersion String?      @map("scanner_software_version")
+  scanConfidenceScore   Decimal?      @map("scan_confidence_score") @db.Decimal(3, 2)
+  rawScanData           Json?         @map("raw_scan_data") @db.JsonB
+  
+  // Override information
+  managerOverride       Boolean       @default(false) @map("manager_override")
+  overrideManagerId     String?       @map("override_manager_id")
+  overrideManager       User?         @relation("ManagerOverrides", fields: [overrideManagerId], references: [id])
+  overrideReason        String?       @map("override_reason")
+  
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([transactionId])
+  @@index([customerId])
+  @@index([employeeId])
+  @@index([verificationDate])
+  @@index([isVerified])
+  @@map("age_verification_logs")
+}
+
+// QuickBooks Integration Models
+model QuickBooksIntegration {
+  id                    String        @id @default(uuid())
+  storeId               String        @unique @map("store_id")
+  store                 StoreLocation @relation(fields: [storeId], references: [id])
+  
+  // QuickBooks connection details
+  realmId               String        @map("realm_id") // QuickBooks Company ID
+  accessToken           String        @map("access_token")
+  refreshToken          String        @map("refresh_token")
+  expiresAt             DateTime      @map("expires_at") @db.Timestamptz
+  
+  // Integration status
+  isActive              Boolean       @default(true) @map("is_active")
+  lastSyncAt            DateTime?     @map("last_sync_at") @db.Timestamptz
+  lastSuccessfulSync    DateTime?     @map("last_successful_sync") @db.Timestamptz
+  syncErrors            Json?         @map("sync_errors") @db.JsonB
+  
+  // Configuration
+  autoSync              Boolean       @default(true) @map("auto_sync")
+  syncInterval          Int           @default(300) @map("sync_interval") // seconds
+  
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  
+  @@index([storeId])
+  @@index([realmId])
+  @@index([isActive])
+  @@index([lastSyncAt])
+  @@map("quickbooks_integrations")
+}
+
+model QuickBooksAccountMapping {
+  id                    String        @id @default(uuid())
+  storeId               String        @unique @map("store_id")
+  store                 StoreLocation @relation(fields: [storeId], references: [id])
+  
+  // Account mappings for different transaction types
+  salesAccount          String        @map("sales_account")
+  taxAccount            String        @map("tax_account")
+  cashAccount           String        @map("cash_account")
+  cardAccount           String        @map("card_account")
+  giftCardAccount       String        @map("gift_card_account")
+  inventoryAccount      String        @map("inventory_account")
+  cogsAccount           String        @map("cogs_account") // Cost of Goods Sold
+  discountAccount       String?       @map("discount_account")
+  
+  // Special tobacco accounts
+  tobaccoTaxAccount     String?       @map("tobacco_tax_account")
+  tobaccoSalesAccount   String?       @map("tobacco_sales_account")
+  
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  
+  @@index([storeId])
+  @@map("quickbooks_account_mappings")
+}

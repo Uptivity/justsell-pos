@@ -1,0 +1,1 @@
+export { ReceiptDisplay } from './ReceiptDisplay'

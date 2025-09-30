@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "strict": false,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": false,
+    "outDir": "./dist",
+    "jsx": "react-jsx",
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "src/api/server.ts",
+    "src/api/middleware/auth.ts",
+    "src/api/routes/auth.ts",
+    "src/api/routes/products.ts", 
+    "src/api/routes/customers.ts",
+    "src/api/routes/transactions.ts",
+    "src/api/controllers/auth.ts",
+    "src/api/controllers/products.ts",
+    "src/api/controllers/customers.ts",
+    "src/api/controllers/transactions.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/tests/**/*",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "src/admin-app/**/*",
+    "src/pos-app/**/*",
+    "src/api/routes/quickbooks.ts",
+    "src/api/controllers/quickbooks.ts"
+  ]
+}
