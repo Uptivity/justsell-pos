@@ -52,13 +52,25 @@ run_migrations() {
 seed_database() {
     echo "🌱 Checking if seeding is needed..."
 
-    # Check if we should seed (only if database is empty)
-    if [ "$SEED_DATABASE" = "true" ]; then
-        echo "   Seeding database with initial data..."
+    # Check if database has any data (look for admin user)
+    user_count=$(npx prisma db execute --stdin <<< "SELECT COUNT(*) as count FROM \"User\" WHERE role = 'ADMIN';" 2>/dev/null | grep -o '[0-9]*' | tail -1 || echo "0")
+
+    if [ "$user_count" = "0" ] || [ "$SEED_DATABASE" = "true" ]; then
+        echo "   Database appears empty or seeding forced. Seeding with initial data..."
         npx prisma db seed
         echo "✅ Database seeded successfully!"
+        echo "   📋 Seeded data includes:"
+        echo "      • GDPR Compliance Policy"
+        echo "      • Privacy Policy & Terms of Service"
+        echo "      • Cookie Policy & Age Verification Policy"
+        echo "      • System settings and configurations"
+        echo "      • Compliance rules for multiple jurisdictions"
+        echo "      • Notification templates"
+        echo "      • Sample products and customer data"
+        echo "      • Default admin user account"
     else
-        echo "   Skipping database seeding (SEED_DATABASE != true)"
+        echo "   Database already has data. Skipping seeding."
+        echo "   Set SEED_DATABASE=true to force re-seeding"
     fi
 }
 
