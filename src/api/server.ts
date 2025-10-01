@@ -15,7 +15,7 @@ import {
 import { securityManager } from './security/securityManager'
 
 const app = express()
-const port = process.env.API_PORT || 3001
+const port = process.env.PORT || process.env.API_PORT || 3002
 
 // Initialize security manager
 let securityInitialized = false

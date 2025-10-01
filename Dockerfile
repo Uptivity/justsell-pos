@@ -53,13 +53,13 @@ RUN mkdir -p /app/logs/audit /app/uploads && \
 
 USER appuser
 
-EXPOSE 3000
+EXPOSE 3002
 
-ENV PORT=3000
+ENV PORT=3002
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
+  CMD curl -f http://localhost:3002/api/health || exit 1
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]

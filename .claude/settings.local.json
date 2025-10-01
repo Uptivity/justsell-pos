@@ -20,7 +20,8 @@
       "Read(//c/tmp/**)",
       "Bash(git init:*)",
       "Bash(git remote add:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Read(//c/Users/User/OneDrive/Developments & Integration/CAOS/after production -deployment/**)"
     ],
     "deny": [],
     "ask": []
