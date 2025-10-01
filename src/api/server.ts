@@ -1,9 +1,9 @@
 import express from 'express'
 import cors from 'cors'
-import authRoutes from './routes/auth'
-import productRoutes from './routes/products'
-import { transactionRoutes } from './routes/transactions'
-import { customerRoutes } from './routes/customers'
+import authRoutes from './routes/auth.js'
+import productRoutes from './routes/products.js'
+import { transactionRoutes } from './routes/transactions.js'
+import { customerRoutes } from './routes/customers.js'
 import {
   securityHeaders,
   apiRateLimit,
@@ -11,8 +11,8 @@ import {
   transactionRateLimit,
   validateRequest,
   secureRequestLogger
-} from './middleware/security'
-import { securityManager } from './security/securityManager'
+} from './middleware/security.js'
+import { securityManager } from './security/securityManager.js'
 
 const app = express()
 const port = process.env.PORT || process.env.API_PORT || 3002

@@ -73,6 +73,12 @@ export default defineConfig({
     port: 5173,
     host: true,
   },
+  define: {
+    global: 'globalThis',
+  },
+  optimizeDeps: {
+    exclude: ['jsonwebtoken'],
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,
