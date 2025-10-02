@@ -1,13 +1,13 @@
 import { Router } from 'express'
-import { transactionController } from '../controllers/transactions'
-import { authenticate } from '../middleware/auth'
-import { checkPermission } from '../middleware/permissions'
+import { transactionController } from '../controllers/transactions.js'
+import { authenticate } from '../middleware/auth.js'
+import { checkPermission } from '../middleware/permissions.js'
 import {
   csrfProtection,
   validateTransactionIntegrity,
   sanitizePaymentData,
   fraudDetection
-} from '../middleware/security'
+} from '../middleware/security.js'
 
 const router = Router()
 

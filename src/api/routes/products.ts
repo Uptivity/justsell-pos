@@ -11,8 +11,8 @@ import {
   getProductVendors,
   updateStock,
   bulkUpdateStock
-} from '../controllers/products'
-import { authenticate, requirePermission } from '../middleware/auth'
+} from '../controllers/products.js'
+import { authenticate, requirePermission } from '../middleware/auth.js'
 
 const router = Router()
 

@@ -1,12 +1,12 @@
 import { Router } from 'express'
-import { quickBooksController } from '../controllers/quickbooks'
-import { authenticateJWT } from '../middleware/auth'
-import { requirePermission } from '../middleware/auth'
+import { quickBooksController } from '../controllers/quickbooks.js'
+import { authenticate } from '../middleware/auth.js'
+import { requirePermission } from '../middleware/auth.js'
 
 const router = Router()
 
 // All QuickBooks routes require authentication
-router.use(authenticateJWT)
+router.use(authenticate)
 
 // OAuth and Connection Management
 router.get('/auth-url', quickBooksController.getAuthUrl)

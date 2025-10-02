@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import { customerController } from '../controllers/customers'
-import { authenticate } from '../middleware/auth'
-import { checkPermission } from '../middleware/permissions'
+import { customerController } from '../controllers/customers.js'
+import { authenticate } from '../middleware/auth.js'
+import { checkPermission } from '../middleware/permissions.js'
 
 const router = Router()
 

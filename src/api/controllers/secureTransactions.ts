@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { PrismaClient } from '../../generated/prisma'
 import crypto from 'crypto'
 import type { CreateTransactionData } from '../../shared/types/transactions'
-import { logSecurityEvent, SecurityEventType } from '../middleware/security'
+import { logSecurityEvent, SecurityEventType } from '../middleware/security.js'
 
 const prisma = new PrismaClient()
 

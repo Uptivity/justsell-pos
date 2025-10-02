@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { PrismaClient } from '../../generated/prisma'
-import { createSecureDatabase } from '../middleware/databaseEncryption'
+import { createSecureDatabase } from '../middleware/databaseEncryption.js'
 import {
   generateSecureTokens,
   verifySecureAccessToken,
@@ -8,7 +8,7 @@ import {
   clearFailedLoginAttempts,
   isAccountLocked
 } from '../../shared/services/secureAuth'
-import { logSecurityEvent, SecurityEventType } from '../middleware/security'
+import { logSecurityEvent, SecurityEventType } from '../middleware/security.js'
 import crypto from 'crypto'
 
 export class SecurityManager {
@@ -206,7 +206,7 @@ export class SecurityManager {
     // Encryption functionality
     try {
       const testData = 'test-encryption-data'
-      const { encrypted } = require('../middleware/databaseEncryption').encryptDatabaseField(testData)
+      const { encrypted } = require('../middleware/databaseEncryption.js').encryptDatabaseField(testData)
       checks.push({
         name: 'Database Encryption',
         status: encrypted ? 'pass' : 'fail',
@@ -320,7 +320,7 @@ export class SecurityManager {
       }
 
       // Verify password using secure comparison
-      const { verifyPasswordSecure } = require('../../shared/services/secureAuth')
+      const { verifyPasswordSecure } = require('../../shared/services/secureAuth.js')
       const isValidPassword = await verifyPasswordSecure(password, user.passwordHash)
 
       if (!isValidPassword) {

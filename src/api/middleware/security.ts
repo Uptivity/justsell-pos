@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import crypto from 'crypto'
-import { prisma } from '../../shared/utils/database'
+import { prisma } from '../../shared/utils/database.js'
 
 // Security event types for audit logging
 export enum SecurityEventType {
